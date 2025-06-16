@@ -4,7 +4,10 @@ import br.com.nataliaweise.front_gestao_vagas.modules.candidate.dto.ProfileUserD
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpClientErrorException.Unauthorized;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Map;
@@ -20,9 +23,13 @@ public class ProfileCandidateService {
 
         HttpEntity<Map<String, String>> request = new HttpEntity<>(headers);
 
-        var result = restTemplate.exchange("http://localhost:8080/candidate/",
-                                            HttpMethod.GET, request, ProfileUserDTO.class);
-        System.out.println(result);
-        return result.getBody();
+        try {
+            var result = restTemplate.exchange("http://localhost:8080/candidate/",
+                    HttpMethod.GET, request, ProfileUserDTO.class);
+            System.out.println(result);
+            return result.getBody();
+        } catch (Unauthorized e) {
+            throw new HttpClientErrorException(HttpStatus.UNAUTHORIZED);
+        }
     }
 }
