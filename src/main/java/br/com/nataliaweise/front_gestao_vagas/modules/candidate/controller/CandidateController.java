@@ -1,10 +1,8 @@
 package br.com.nataliaweise.front_gestao_vagas.modules.candidate.controller;
 
 import br.com.nataliaweise.front_gestao_vagas.modules.candidate.dto.CreateCandidateDTO;
-import br.com.nataliaweise.front_gestao_vagas.modules.candidate.service.ApplyJobService;
-import br.com.nataliaweise.front_gestao_vagas.modules.candidate.service.CandidateService;
-import br.com.nataliaweise.front_gestao_vagas.modules.candidate.service.FindJobService;
-import br.com.nataliaweise.front_gestao_vagas.modules.candidate.service.ProfileCandidateService;
+import br.com.nataliaweise.front_gestao_vagas.modules.candidate.service.*;
+import br.com.nataliaweise.front_gestao_vagas.utils.FormatErrorMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -38,6 +36,9 @@ public class CandidateController {
 
     @Autowired
     private ApplyJobService applyJobService;
+
+    @Autowired
+    private CreateCandidateService createCandidateService;
 
     @GetMapping("/login")
     public String login(){
@@ -115,6 +116,13 @@ public class CandidateController {
 
     @PostMapping("/create")
     public String save(CreateCandidateDTO candidate, Model model){
+        try{
+            createCandidateService.execute(candidate);
+
+        } catch(HttpClientErrorException ex){
+            model.addAttribute("error_message", FormatErrorMessage.formatErrorMessage(ex.getResponseBodyAsString()));
+        }
+
         model.addAttribute("candidate", candidate);
         return "candidate/create";
     }
