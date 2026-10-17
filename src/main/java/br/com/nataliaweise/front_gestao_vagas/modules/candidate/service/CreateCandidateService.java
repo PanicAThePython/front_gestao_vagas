@@ -1,6 +1,7 @@
 package br.com.nataliaweise.front_gestao_vagas.modules.candidate.service;
 
 import br.com.nataliaweise.front_gestao_vagas.modules.candidate.dto.CreateCandidateDTO;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -10,6 +11,9 @@ import org.springframework.web.client.RestTemplate;
 @Service
 public class CreateCandidateService {
 
+    @Value("${host.api.gestao.vagas}")
+    private String hostAPIGestaoVagas;
+
     public void execute(CreateCandidateDTO candidate){
         RestTemplate rt = new RestTemplate();
 
@@ -18,7 +22,8 @@ public class CreateCandidateService {
 
         HttpEntity<CreateCandidateDTO> request = new HttpEntity<>(candidate, headers);
 
-        var result = rt.postForObject("http://localhost:8080/candidate/", request, String.class);
+        var url = hostAPIGestaoVagas.concat("/candidate/");
+        var result = rt.postForObject(url, request, String.class);
         System.out.println(result);
     }
 }

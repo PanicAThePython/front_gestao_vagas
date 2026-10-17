@@ -1,13 +1,17 @@
 package br.com.nataliaweise.front_gestao_vagas.modules.company;
 
 import br.com.nataliaweise.front_gestao_vagas.modules.company.dto.CreateCompanyDTO;
+import br.com.nataliaweise.front_gestao_vagas.modules.company.dto.CreateJobsDTO;
 import br.com.nataliaweise.front_gestao_vagas.modules.company.service.CreateCompanyService;
+import br.com.nataliaweise.front_gestao_vagas.modules.company.service.CreateJobService;
+import br.com.nataliaweise.front_gestao_vagas.modules.company.service.ListAllJobsCompanyService;
 import br.com.nataliaweise.front_gestao_vagas.modules.company.service.LoginCompanyService;
 import br.com.nataliaweise.front_gestao_vagas.utils.FormatErrorMessage;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -22,6 +26,12 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @Controller
 @RequestMapping("/company")
 public class CompanyController {
+
+    @Autowired
+    private CreateJobService createJobService;
+
+    @Autowired
+    private ListAllJobsCompanyService listAllJobsCompanyService;
 
     @Autowired
     private LoginCompanyService loginCompanyService;
@@ -79,7 +89,39 @@ public class CompanyController {
 
     @GetMapping("/jobs")
     @PreAuthorize("hasRole('COMPANY')")
-    public String jobs(){
+    public String jobs(Model model){
+        model.addAttribute("jobs", new CreateJobsDTO());
         return "company/jobs";
+    }
+
+    @PostMapping("/jobs")
+    @PreAuthorize("hasRole('COMPANY')")
+    public String createJobs(CreateJobsDTO jobs){
+        var result = createJobService.execute(jobs, getToken());
+        return "redirect:/company/jobs/list";
+    }
+
+    @GetMapping("/jobs/list")
+    @PreAuthorize("hasRole('COMPANY')")
+    public String listJobs(Model model){
+        var result = listAllJobsCompanyService.execute(getToken());
+        model.addAttribute("jobs", result);
+        return "company/list";
+    }
+
+    @GetMapping("/logout")
+    public String logout(HttpSession session){
+
+        SecurityContextHolder.getContext().setAuthentication(null);
+        SecurityContext securityContext = SecurityContextHolder.getContext();
+        session.setAttribute("SPRING_SECURITY_CONTEXT", securityContext);
+        session.setAttribute("token", null);
+
+        return "redirect:/company/login";
+    }
+
+    private String getToken(){
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return authentication.getDetails().toString();
     }
 }

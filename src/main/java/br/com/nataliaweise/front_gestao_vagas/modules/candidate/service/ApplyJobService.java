@@ -1,6 +1,7 @@
 package br.com.nataliaweise.front_gestao_vagas.modules.candidate.service;
 
 import br.com.nataliaweise.front_gestao_vagas.modules.candidate.dto.Token;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -14,6 +15,9 @@ import java.util.UUID;
 @Service
 public class ApplyJobService {
 
+    @Value("${host.api.gestao.vagas}")
+    private String hostAPIGestaoVagas;
+
     public String execute(String token, UUID idJob){
         RestTemplate restTemplate = new RestTemplate();
 
@@ -23,8 +27,8 @@ public class ApplyJobService {
 
         HttpEntity<UUID> request = new HttpEntity<>(idJob, headers);
 
-        var result = restTemplate.postForObject("http://localhost:8080/candidate/job/apply",
-                request, String.class);
+        var url = hostAPIGestaoVagas.concat("/candidate/job/apply");
+        var result = restTemplate.postForObject(url, request, String.class);
 
         return result;
     }
